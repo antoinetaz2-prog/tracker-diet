@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="B&T Seche">
+<title>Blood and Turbo Seche</title>
+<style>
+:root{--bg:#0a0a10;--bg2:#12121e;--bg3:#1a1a28;--border:#252535;--text:#e0e0ee;--text2:#888899;--accent:#e94560;--gold:#f5a623;--green:#4ade80;--red:#f87171;--blue:#4a9eff;--r:12px;--rs:8px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;overscroll-behavior:none;}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+.ht{font-size:17px;font-weight:900;letter-spacing:2px;color:var(--accent);}
+.hs{font-size:10px;color:var(--text2);margin-top:1px;}
+.nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.nb{flex:1;padding:10px 2px 8px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text2);font-size:9px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.nb.active{border-bottom-color:var(--accent);color:var(--accent);}
+.ni{font-size:18px;}
+.pg{display:none;overflow-y:auto;padding:14px;padding-bottom:40px;}
+.pg.active{display:block;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.ct{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px;}
+.field label{font-size:12px;color:var(--text2);}
+.field input,.field select,.field textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:11px 13px;color:var(--text);font-size:15px;font-family:inherit;width:100%;-webkit-appearance:none;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stitle{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:1px;margin-bottom:8px;margin-top:4px;}
+.macro-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.macro-item{display:flex;flex-direction:column;gap:4px;}
+.macro-label{font-size:10px;font-weight:700;text-align:center;}
+.macro-item input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:11px 6px;color:var(--text);font-size:16px;text-align:center;font-family:inherit;width:100%;}
+.mp{color:#4a9eff;} .ml{color:#f5a623;} .mg{color:#4ade80;} .mc{color:#e94560;}
+.ip input{border-bottom:2px solid #4a9eff;}
+.il input{border-bottom:2px solid #f5a623;}
+.ig input{border-bottom:2px solid #4ade80;}
+.ic input{border-bottom:2px solid #e94560;}
+.kcal-prev{font-size:12px;color:var(--text2);text-align:right;margin:4px 0 8px;}
+.macro-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;gap:1px;margin-bottom:12px;}
+.btn{width:100%;padding:14px;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;}
+.btn-p{background:var(--accent);color:#fff;}
+.btn-g{background:var(--bg3);border:1px solid var(--border);color:var(--text);}
+.btn-copy{width:100%;padding:13px;background:var(--green);color:#000;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.rrow{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
+.rb{padding:6px 10px;border:1px solid var(--border);border-radius:var(--rs);background:none;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;}
+.rb.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+.mg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.met{background:var(--bg3);border-radius:var(--rs);padding:12px;}
+.ml2{font-size:10px;color:var(--text2);margin-bottom:3px;}
+.mv{font-size:20px;font-weight:700;}
+.mu{font-size:12px;color:var(--text2);}
+.md{font-size:11px;margin-top:2px;}
+.dp{color:var(--green);} .dn{color:var(--red);} .dne{color:var(--text2);}
+.cwrap{width:100%;height:160px;position:relative;margin:10px 0;}
+.copy-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:12px;font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap;font-family:monospace;margin-bottom:10px;max-height:300px;overflow-y:auto;}
+.dots{display:flex;justify-content:center;gap:10px;margin:16px 0;}
+.dot{width:14px;height:14px;border-radius:50%;border:1px solid var(--border);}
+.dot.on{background:var(--accent);border-color:var(--accent);}
+.ib{background:var(--bg3);border-radius:var(--rs);padding:11px;font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:10px;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 20px;border-radius:25px;font-size:13px;font-weight:600;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div><div class="ht">BLOOD &amp; TURBO</div><div class="hs">TRACKER SECHE</div></div>
+  <div id="hdr-dl" style="font-size:12px;color:var(--text2)"></div>
+</div>
+<nav class="nav">
+  <button class="nb active" onclick="SP('dash')" id="nav-dash"><span class="ni">&#x1F4CA;</span><span>Dashboard</span></button>
+  <button class="nb" onclick="SP('saisie')" id="nav-saisie"><span class="ni">+</span><span>Saisie</span></button>
+  <button class="nb" onclick="SP('bilan')" id="nav-bilan"><span class="ni">&#x1F4CB;</span><span>Bilan</span></button>
+  <button class="nb" onclick="SP('config')" id="nav-config"><span class="ni">&#x2699;&#xFE0F;</span><span>Config</span></button>
+</nav>
+<div class="pg active" id="pg-dash"></div>
+<div class="pg" id="pg-saisie"></div>
+<div class="pg" id="pg-bilan"></div>
+<div class="pg" id="pg-config"></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+var db = { entries: [{"date": "2025-05-11", "poids": "62.10", "pas": "15000", "calories": 2100, "sommeil_duree": "7.5", "entrainement": "Epaules / Bras / Cou"}, {"date": "2025-05-12", "poids": "62.10", "pas": "15000", "calories": 2100, "sommeil_duree": "7.5"}, {"date": "2025-05-13", "poids": "61.85", "pas": "15000", "calories": 2100, "sommeil_duree": "7.5"}, {"date": "2025-05-14", "poids": "62.45", "pas": "16000", "calories": 2100, "sommeil_duree": "7.0"}, {"date": "2025-05-15", "poids": "62.20", "pas": "15000", "calories": 2100, "sommeil_duree": "7.5"}, {"date": "2025-05-16", "poids": "62.15", "pas": "15000", "calories": 2700, "sommeil_duree": "7.0"}, {"date": "2025-05-17", "poids": "62.00", "pas": "15000", "calories": 2100, "sommeil_duree": "8.5"}, {"date": "2025-05-18", "poids": "62.00", "pas": "15000", "calories": 2100, "sommeil_duree": "8.5"}], lastBilanIdx: 0 };
+var cfg = {
+  poidsDepart: 64,
+  calCible: 2100,
+  macroP: 180, macroL: 60, macroG: 195,
+  dateFin: '2025-07-12',
+  maintenance: 2650
+};
+var curR = null;
+var wChart = null;
+
+function svDB() { try { localStorage.setItem('bts_v3', JSON.stringify({ db: db, cfg: cfg })); } catch(e) {} }
+function ldDB() {
+  try {
+    var r = localStorage.getItem('bts_v3');
+    if (r) { var p = JSON.parse(r); db = p.db || db; cfg = p.cfg || cfg; }
+  } catch(e) {}
+}
+function toast(m) {
+  var t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+function toDay() { return new Date().toISOString().split('T')[0]; }
+function fmtD(s) { return new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); }
+function fmtDL(s) { return new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); }
+function kcal(p, l, g) { return Math.round(parseFloat(p||0)*4 + parseFloat(l||0)*9 + parseFloat(g||0)*4); }
+function avg(arr, key) {
+  var v = arr.filter(function(e) { return e[key]; }).map(function(e) { return parseFloat(e[key]); });
+  return v.length ? Math.round(v.reduce(function(a,b){return a+b;},0)/v.length*10)/10 : null;
+}
+function sortedEntries() { return db.entries.slice().sort(function(a,b) { return a.date.localeCompare(b.date); }); }
+function weightEntries() { return sortedEntries().filter(function(e) { return e.poids; }); }
+function sinceLastBilan() { return weightEntries().slice(db.lastBilanIdx); }
+function bilanReady() { return sinceLastBilan().length >= 3; }
+function daysLeft() {
+  var f = new Date(cfg.dateFin + 'T12:00:00');
+  return Math.max(0, Math.round((f - new Date()) / 864e5));
+}
+function macroBar(p, l, g) {
+  var tot = parseFloat(p||0) + parseFloat(l||0) + parseFloat(g||0);
+  if (!tot) return '';
+  var pw = Math.round(parseFloat(p||0)/tot*100);
+  var lw = Math.round(parseFloat(l||0)/tot*100);
+  var gw = 100 - pw - lw;
+  return '<div style="width:'+pw+'%;height:100%;background:#4a9eff"></div>'
+       + '<div style="width:'+lw+'%;height:100%;background:#f5a623"></div>'
+       + '<div style="width:'+gw+'%;height:100%;background:#4ade80"></div>';
+}
+
+function SP(p) {
+  document.querySelectorAll('.pg').forEach(function(x) { x.classList.remove('active'); });
+  document.querySelectorAll('.nb').forEach(function(x) { x.classList.remove('active'); });
+  document.getElementById('pg-' + p).classList.add('active');
+  document.getElementById('nav-' + p).classList.add('active');
+  if (p === 'dash') renderDash();
+  if (p === 'saisie') renderSaisie();
+  if (p === 'bilan') renderBilan();
+  if (p === 'config') renderConfig();
+}
+
+// ── DASHBOARD ──
+function renderDash() {
+  var el = document.getElementById('pg-dash');
+  var we = weightEntries();
+  var last = we.length ? we[we.length-1] : null;
+  var prev = we.length > 1 ? we[we.length-2] : null;
+  var wDelta = last && prev ? (parseFloat(last.poids) - parseFloat(prev.poids)).toFixed(1) : null;
+  var last7 = sortedEntries().slice(-7);
+  var avgCal = avg(last7, 'calories');
+  var avgPas = avg(last7, 'pas');
+  var avgSleep = avg(last7, 'sommeil_score');
+  var poidsActuel = last ? parseFloat(last.poids) : cfg.poidsDepart;
+  var perdu = (cfg.poidsDepart - poidsActuel).toFixed(1);
+  var sinceB = sinceLastBilan().length;
+  var dl = daysLeft();
+
+  document.getElementById('hdr-dl').textContent = 'J-' + dl;
+
+  var html = '';
+
+  // Alerte bilan
+  if (bilanReady()) {
+    html += '<div style="background:rgba(233,69,96,0.1);border:1px solid rgba(233,69,96,0.3);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">'
+          + '<div><div style="font-size:13px;font-weight:700;color:var(--accent)">Bilan disponible !</div>'
+          + '<div style="font-size:11px;color:var(--text2)">3 pesees enregistrees</div></div>'
+          + '<button onclick="SP(\'bilan\')" style="background:var(--accent);color:#fff;border:none;border-radius:var(--rs);padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Voir</button>'
+          + '</div>';
+  }
+
+  // Poids
+  html += '<div class="card"><div class="ct">Poids</div>'
+        + '<div class="mg2">'
+        + '<div class="met"><div class="ml2">Dernier releve</div>'
+        + '<div class="mv">' + (last ? last.poids : '---') + '<span class="mu"> kg</span></div>'
+        + (wDelta !== null ? '<div class="md ' + (parseFloat(wDelta)<0?'dp':'dn') + '">' + (parseFloat(wDelta)>0?'+':'') + wDelta + ' vs hier</div>' : '')
+        + '</div>'
+        + '<div class="met"><div class="ml2">Perdu depuis depart</div>'
+        + '<div class="mv">' + perdu + '<span class="mu"> kg</span></div>'
+        + '<div class="md dne">Depart : ' + cfg.poidsDepart + ' kg</div>'
+        + '</div></div>';
+
+  if (we.length > 1) {
+    html += '<div class="cwrap"><canvas id="wc"></canvas></div>';
+  } else {
+    html += '<div style="font-size:11px;color:var(--text2);text-align:center;padding:14px 0">Enregistre 2 pesees pour voir la courbe</div>';
+  }
+  html += '</div>';
+
+  // Aujourd'hui
+  html += '<div class="card"><div class="ct">Suivi</div>'
+        + '<div class="mg2">'
+        + '<div class="met"><div class="ml2">Poids ce matin</div>'
+        + '<div class="mv">' + (last ? last.poids : '---') + '<span class="mu"> kg</span></div></div>'
+        + '<div class="met"><div class="ml2">Prochain bilan</div>'
+        + '<div class="mv">' + (3-sinceB) + '<span class="mu"> pesees</span></div>'
+        + '<div class="md dne">' + sinceB + '/3 depuis dernier</div></div>'
+        + '</div>'
+        + '<div style="font-size:11px;color:var(--text2);display:flex;justify-content:space-between;margin-top:4px">'
+        + '<span>Fin de seche</span><span style="color:var(--gold);font-weight:600">J-' + dl + ' — ' + fmtD(cfg.dateFin) + '</span></div>'
+        + '</div>';
+
+  // Moyennes 7j
+  html += '<div class="card"><div class="ct">Moyennes 7 jours</div>'
+        + '<div class="mg2">'
+        + '<div class="met"><div class="ml2">Calories</div>'
+        + '<div class="mv" style="font-size:17px">' + (avgCal || '---') + '<span class="mu">' + (avgCal?' kcal':'') + '</span></div>'
+        + (avgCal ? '<div class="md ' + (avgCal <= cfg.calCible ? 'dp' : 'dn') + '">Cible ' + cfg.calCible + ' kcal</div>' : '')
+        + '</div>'
+        + '<div class="met"><div class="ml2">Pas</div>'
+        + '<div class="mv" style="font-size:17px">' + (avgPas ? Math.round(avgPas).toLocaleString('fr-FR') : '---') + '</div>'
+        + '</div></div>'
+        + (avgSleep ? '<div style="font-size:11px;color:var(--text2);margin-top:4px">Sommeil moyen : ' + avgSleep + '% — ' + (avgSleep>=75?'Bon':avgSleep>=55?'Moyen':'Mauvais') + '</div>' : '')
+        + '</div>';
+
+  el.innerHTML = html;
+
+  if (we.length > 1) {
+    setTimeout(function() {
+      var ctx = document.getElementById('wc');
+      if (!ctx) return;
+      if (wChart) { wChart.destroy(); wChart = null; }
+      var pts = we.slice(-14);
+      wChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: pts.map(function(e) { return fmtD(e.date); }),
+          datasets: [{
+            data: pts.map(function(e) { return parseFloat(e.poids); }),
+            borderColor: '#e94560', backgroundColor: 'rgba(233,69,96,0.07)',
+            tension: 0.3, pointRadius: 4, fill: true, borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { font: { size: 10 }, maxRotation: 40, maxTicksLimit: 7 }, grid: { display: false } },
+            y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } }
+          }
+        }
+      });
+    }, 100);
+  }
+}
+
+// ── SAISIE ──
+function renderSaisie() {
+  var el = document.getElementById('pg-saisie');
+  var td = toDay();
+  var ex = db.entries.find(function(e) { return e.date === td; }) || {};
+  var k = ex.calories || (ex.macroP||ex.macroL||ex.macroG ? kcal(ex.macroP,ex.macroL,ex.macroG) : null);
+
+  el.innerHTML = '<div class="card">'
+    + '<div class="ct">' + fmtDL(td) + '</div>'
+
+    + '<div class="field"><label>Poids du matin (kg)</label>'
+    + '<input type="number" inputmode="decimal" step="0.1" id="in-poids" placeholder="62.2" value="' + (ex.poids||'') + '"/></div>'
+
+    + '<div class="stitle">Sommeil</div>'
+    + '<div class="g2" style="margin-bottom:12px">'
+    + '<div class="field" style="margin-bottom:0"><label>Duree (h)</label>'
+    + '<input type="number" inputmode="decimal" step="0.5" id="in-sdur" placeholder="7.5" value="' + (ex.sommeil_duree||'') + '"/></div>'
+    + '<div class="field" style="margin-bottom:0"><label>Score montre (%)</label>'
+    + '<input type="number" inputmode="numeric" id="in-sscore" placeholder="78" value="' + (ex.sommeil_score||'') + '"/></div>'
+    + '</div>'
+
+    + '<div class="stitle">Macronutriments</div>'
+    + '<div class="macro-grid">'
+    + '<div class="macro-item ip"><div class="macro-label mp">Proteines (g)</div>'
+    + '<input type="number" inputmode="numeric" id="in-p" placeholder="' + cfg.macroP + '" value="' + (ex.macroP||'') + '" oninput="updKcal()"/></div>'
+    + '<div class="macro-item il"><div class="macro-label ml">Lipides (g)</div>'
+    + '<input type="number" inputmode="numeric" id="in-l" placeholder="' + cfg.macroL + '" value="' + (ex.macroL||'') + '" oninput="updKcal()"/></div>'
+    + '<div class="macro-item ig"><div class="macro-label mg">Glucides (g)</div>'
+    + '<input type="number" inputmode="numeric" id="in-g" placeholder="' + cfg.macroG + '" value="' + (ex.macroG||'') + '" oninput="updKcal()"/></div>'
+    + '<div class="macro-item ic"><div class="macro-label mc">Calories (kcal)</div>'
+    + '<input type="number" inputmode="numeric" id="in-cal" placeholder="2100" value="' + (ex.calories||'') + '"/></div>'
+    + '</div>'
+    + '<div class="kcal-prev" id="kp">' + (k ? '= ' + k + ' kcal calcules' : '') + '</div>'
+    + '<div class="macro-bar" id="mb">' + macroBar(ex.macroP, ex.macroL, ex.macroG) + '</div>'
+
+    + '<div class="stitle">Activite</div>'
+    + '<div class="g2" style="margin-bottom:12px">'
+    + '<div class="field" style="margin-bottom:0"><label>Pas</label>'
+    + '<input type="number" inputmode="numeric" id="in-pas" placeholder="15000" value="' + (ex.pas||'') + '"/></div>'
+    + '<div class="field" style="margin-bottom:0"><label>Entrainement</label>'
+    + '<input type="text" id="in-train" placeholder="Dos / SDT" value="' + (ex.entrainement||'') + '"/></div>'
+    + '</div>'
+
+    + '<div class="stitle">Ressenti general</div>'
+    + '<div class="rrow">'
+    + [4,5,6,7,8,9,10].map(function(n) {
+        return '<button class="rb' + (ex.ressenti==n?' active':'') + '" onclick="setR(' + n + ')">' + n + '/10</button>';
+      }).join('')
+    + '</div>'
+
+    + '<div class="field" style="margin-top:12px"><label>Notes</label>'
+    + '<textarea id="in-notes" rows="2" placeholder="Remarques, sensations...">' + (ex.notes||'') + '</textarea></div>'
+
+    + '<button class="btn btn-p" onclick="saveEntry()">Sauvegarder</button>'
+    + '</div>';
+
+  curR = ex.ressenti || null;
+}
+
+function updKcal() {
+  var p = document.getElementById('in-p').value;
+  var l = document.getElementById('in-l').value;
+  var g = document.getElementById('in-g').value;
+  var k = kcal(p, l, g);
+  var kp = document.getElementById('kp');
+  var mb = document.getElementById('mb');
+  var cal = document.getElementById('in-cal');
+  if (kp) kp.textContent = (p||l||g) ? '= ' + k + ' kcal calcules' : '';
+  if (mb) mb.innerHTML = macroBar(p, l, g);
+  if (cal && (p||l||g)) cal.value = k || '';
+}
+
+function setR(n) {
+  curR = n;
+  document.querySelectorAll('.rb').forEach(function(b) { b.classList.toggle('active', parseInt(b.textContent) === n); });
+}
+
+function saveEntry() {
+  var td = toDay();
+  var p = document.getElementById('in-p').value;
+  var l = document.getElementById('in-l').value;
+  var g = document.getElementById('in-g').value;
+  var calInput = document.getElementById('in-cal').value;
+  var k = kcal(p, l, g);
+  var entry = {
+    date: td,
+    poids: document.getElementById('in-poids').value || null,
+    sommeil_duree: document.getElementById('in-sdur').value || null,
+    sommeil_score: document.getElementById('in-sscore').value || null,
+    macroP: p || null, macroL: l || null, macroG: g || null,
+    calories: calInput ? parseFloat(calInput) : (k || null),
+    pas: document.getElementById('in-pas').value || null,
+    entrainement: document.getElementById('in-train').value || null,
+    ressenti: curR || null,
+    notes: document.getElementById('in-notes').value || null
+  };
+  var idx = db.entries.findIndex(function(e) { return e.date === td; });
+  if (idx >= 0) db.entries[idx] = entry; else db.entries.push(entry);
+  svDB();
+  toast('Donnees sauvegardees');
+  renderDash();
+}
+
+// ── BILAN ──
+function genBilan(entries) {
+  var we = entries.filter(function(e) { return e.poids; });
+  var poids = we.map(function(e) { return parseFloat(e.poids); });
+  var avgP = poids.length ? Math.round(poids.reduce(function(a,b){return a+b;},0)/poids.length*10)/10 : null;
+  var prevWE = weightEntries().slice(0, db.lastBilanIdx);
+  var prevP = prevWE.map(function(e) { return parseFloat(e.poids); });
+  var prevAvg = prevP.length ? Math.round(prevP.reduce(function(a,b){return a+b;},0)/prevP.length*10)/10 : null;
+  var wD = avgP && prevAvg ? (avgP - prevAvg).toFixed(1) : null;
+  var avgCal = avg(entries, 'calories');
+  var avgMp = avg(entries, 'macroP');
+  var avgMl = avg(entries, 'macroL');
+  var avgMg = avg(entries, 'macroG');
+  var avgPas = avg(entries, 'pas');
+  var avgSl = avg(entries, 'sommeil_score');
+  var avgSd = avg(entries, 'sommeil_duree');
+  var avgRes = avg(entries, 'ressenti');
+  var trains = entries.filter(function(e) { return e.entrainement; }).map(function(e) { return e.entrainement; });
+  var poidsAct = poids.length ? poids[poids.length-1] : cfg.poidsDepart;
+  var perdu = (cfg.poidsDepart - poidsAct).toFixed(1);
+  var dl = daysLeft();
+  var df = entries[0] ? fmtD(entries[0].date) : '';
+  var dt = entries[entries.length-1] ? fmtD(entries[entries.length-1].date) : '';
+
+  var t = 'BILAN SECHE -- ' + df + ' -> ' + dt + '\n';
+  t += '========================\n\n';
+  t += 'POIDS\n';
+  t += 'Pesees : ' + poids.map(function(p) { return p + ' kg'; }).join(' / ') + '\n';
+  t += 'Moyenne periode : ' + (avgP||'---') + ' kg\n';
+  if (wD !== null) t += 'vs bilan precedent : ' + (parseFloat(wD)>0?'+':'') + wD + ' kg\n';
+  t += 'Perdu depuis depart : ' + perdu + ' kg\n';
+  t += 'J-' + dl + ' avant fin de seche (' + fmtD(cfg.dateFin) + ')\n\n';
+  t += 'NUTRITION MOYENNE\n';
+  t += 'Calories : ' + (avgCal||'---') + ' kcal/j (cible : ' + cfg.calCible + ' kcal)\n';
+  t += 'P : ' + (avgMp||'---') + 'g  L : ' + (avgMl||'---') + 'g  G : ' + (avgMg||'---') + 'g\n\n';
+  t += 'ACTIVITE\n';
+  t += 'Pas moyens : ' + (avgPas ? Math.round(avgPas).toLocaleString('fr-FR') : '---') + '/j\n';
+  t += 'Entrainements : ' + (trains.length ? trains.join(' | ') : 'non renseignes') + '\n\n';
+  t += 'SOMMEIL\n';
+  t += 'Duree moyenne : ' + (avgSd||'---') + 'h\n';
+  t += 'Score montre : ' + (avgSl||'---') + (avgSl?'%':'') + '\n\n';
+  t += 'RESSENTI MOYEN : ' + (avgRes||'---') + '/10\n\n';
+  t += '========================\n';
+  t += 'Analyse et retour coach svp.';
+  return t;
+}
+
+function renderBilan() {
+  var el = document.getElementById('pg-bilan');
+  var newE = sinceLastBilan();
+  var ready = newE.length >= 3;
+
+  if (ready) {
+    var txt = genBilan(newE);
+    el.innerHTML = '<div class="card" style="border-color:var(--accent)">'
+      + '<div class="ct">Bilan pret -- 3 pesees</div>'
+      + '<div class="ib">Copie le texte et colle-le dans une conversation Claude pour l\'analyse.</div>'
+      + '<div class="copy-box" id="bilan-txt">' + txt + '</div>'
+      + '<button class="btn-copy" onclick="copyBilan()">Copier le bilan</button>'
+      + '<button class="btn btn-g" onclick="markDone()" style="margin-top:8px">Marque comme envoye</button>'
+      + '</div>';
+  } else {
+    el.innerHTML = '<div class="card">'
+      + '<div class="ct">Prochain bilan</div>'
+      + '<div style="text-align:center;padding:20px 0">'
+      + '<div style="font-size:40px;margin-bottom:12px">&#x2696;&#xFE0F;</div>'
+      + '<div style="font-size:14px;color:var(--text2)">Il manque <b style="color:var(--text)">' + (3-newE.length) + ' pesee(s)</b><br>depuis le dernier bilan</div>'
+      + '<div class="dots">'
+      + [0,1,2].map(function(i) { return '<div class="dot' + (i<newE.length?' on':'') + '"></div>'; }).join('')
+      + '</div></div></div>';
+  }
+}
+
+function copyBilan() {
+  var txt = document.getElementById('bilan-txt').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(function() { toast('Bilan copie !'); }).catch(function() { fbCopy(txt); });
+  } else { fbCopy(txt); }
+}
+
+function fbCopy(txt) {
+  var ta = document.createElement('textarea');
+  ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('Bilan copie !'); } catch(e) { toast('Selectionne le texte manuellement'); }
+  document.body.removeChild(ta);
+}
+
+function markDone() {
+  db.lastBilanIdx = weightEntries().length;
+  svDB(); toast('Bilan marque envoye');
+  renderBilan(); renderDash();
+}
+
+// ── CONFIG ──
+function renderConfig() {
+  var el = document.getElementById('pg-config');
+  el.innerHTML = '<div class="card"><div class="ct">Parametres seche</div>'
+    + '<div class="field"><label>Poids de depart (kg)</label>'
+    + '<input type="number" inputmode="decimal" step="0.1" id="c-pd" value="' + cfg.poidsDepart + '"/></div>'
+    + '<div class="field"><label>Date de fin</label>'
+    + '<input type="date" id="c-fin" value="' + cfg.dateFin + '"/></div>'
+    + '<div class="field"><label>Calories cible (kcal/j)</label>'
+    + '<input type="number" inputmode="numeric" id="c-cal" value="' + cfg.calCible + '"/></div>'
+    + '<div class="field"><label>Maintenance estimee (kcal/j)</label>'
+    + '<input type="number" inputmode="numeric" id="c-maint" value="' + cfg.maintenance + '"/></div>'
+    + '<div class="stitle" style="margin-top:4px">Macros cibles</div>'
+    + '<div class="macro-grid" style="margin-bottom:14px">'
+    + '<div class="macro-item ip"><div class="macro-label mp">P (g)</div><input type="number" inputmode="numeric" id="c-p" value="' + cfg.macroP + '"/></div>'
+    + '<div class="macro-item il"><div class="macro-label ml">L (g)</div><input type="number" inputmode="numeric" id="c-l" value="' + cfg.macroL + '"/></div>'
+    + '<div class="macro-item ig"><div class="macro-label mg">G (g)</div><input type="number" inputmode="numeric" id="c-g" value="' + cfg.macroG + '"/></div>'
+    + '</div>'
+    + '<button class="btn btn-p" onclick="saveCfg()">Enregistrer</button>'
+    + '</div>'
+    + '<div class="card"><div class="ct">Sauvegarde</div>'
+    + '<div class="ib">Exporte tes donnees regulierement pour ne pas les perdre.</div>'
+    + '<button class="btn btn-p" onclick="exportD()" style="margin-bottom:8px">Exporter mes donnees</button>'
+    + '<button class="btn btn-g" onclick="importD()">Importer une sauvegarde</button>'
+    + '</div>';
+}
+
+function saveCfg() {
+  var f = function(id, def) { return parseFloat(document.getElementById(id).value) || def; };
+  cfg.poidsDepart = f('c-pd', cfg.poidsDepart);
+  cfg.dateFin = document.getElementById('c-fin').value || cfg.dateFin;
+  cfg.calCible = f('c-cal', cfg.calCible);
+  cfg.maintenance = f('c-maint', cfg.maintenance);
+  cfg.macroP = f('c-p', cfg.macroP);
+  cfg.macroL = f('c-l', cfg.macroL);
+  cfg.macroG = f('c-g', cfg.macroG);
+  svDB(); toast('Configuration enregistree'); renderDash();
+}
+
+function exportD() {
+  var data = JSON.stringify({ db: db, cfg: cfg }, null, 2);
+  var blob = new Blob([data], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'bt_seche_' + toDay() + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  toast('Exporte');
+}
+
+function importD() {
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = function(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var p = JSON.parse(ev.target.result);
+        if (!p.db || !p.cfg) { toast('Fichier invalide'); return; }
+        if (!confirm('Restaurer cette sauvegarde ?')) return;
+        db = p.db; cfg = p.cfg; svDB();
+        toast('Donnees restaurees'); SP('dash');
+      } catch(e) { toast('Erreur de lecture'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+ldDB();
+renderDash();
+</script>
+</body>
+</html>
