@@ -252,32 +252,48 @@ function renderSaisie() {
   var el = document.getElementById('pg-saisie');
   var td = toDay();
   var ex = db.entries.find(function(e) { return e.date === td; }) || {};
+  // Merge draft if same day and not yet saved
+  var draft = ldDraft();
+  if (draft && draft.date === td && !ex.poids) {
+    // Restore draft values into ex for pre-filling
+    if (draft['in-poids']) ex.poids = draft['in-poids'];
+    if (draft['in-sdur']) ex.sommeil_duree = draft['in-sdur'];
+    if (draft['in-sscore']) ex.sommeil_score = draft['in-sscore'];
+    if (draft['in-p']) ex.macroP = draft['in-p'];
+    if (draft['in-l']) ex.macroL = draft['in-l'];
+    if (draft['in-g']) ex.macroG = draft['in-g'];
+    if (draft['in-cal']) ex.calories = draft['in-cal'];
+    if (draft['in-pas']) ex.pas = draft['in-pas'];
+    if (draft['in-train']) ex.entrainement = draft['in-train'];
+    if (draft['in-notes']) ex.notes = draft['in-notes'];
+    if (draft['ressenti']) ex.ressenti = draft['ressenti'];
+  }
   var k = ex.calories || (ex.macroP||ex.macroL||ex.macroG ? kcal(ex.macroP,ex.macroL,ex.macroG) : null);
 
   el.innerHTML = '<div class="card">'
     + '<div class="ct">' + fmtDL(td) + '</div>'
 
     + '<div class="field"><label>Poids du matin (kg)</label>'
-    + '<input type="number" inputmode="decimal" step="0.1" id="in-poids" placeholder="62.2" value="' + (ex.poids||'') + '"/></div>'
+    + '<input type="number" inputmode="decimal" step="0.1" id="in-poids" placeholder="62.2" value="' + (ex.poids||'') + '" oninput="svDraft()"/></div>'
 
     + '<div class="stitle">Sommeil</div>'
     + '<div class="g2" style="margin-bottom:12px">'
     + '<div class="field" style="margin-bottom:0"><label>Duree (h)</label>'
-    + '<input type="number" inputmode="decimal" step="0.5" id="in-sdur" placeholder="7.5" value="' + (ex.sommeil_duree||'') + '"/></div>'
+    + '<input type="number" inputmode="decimal" step="0.5" id="in-sdur" placeholder="7.5" oninput="svDraft()" value="' + (ex.sommeil_duree||'') + '"/></div>'
     + '<div class="field" style="margin-bottom:0"><label>Score montre (%)</label>'
-    + '<input type="number" inputmode="numeric" id="in-sscore" placeholder="78" value="' + (ex.sommeil_score||'') + '"/></div>'
+    + '<input type="number" inputmode="numeric" id="in-sscore" placeholder="78" oninput="svDraft()" value="' + (ex.sommeil_score||'') + '"/></div>'
     + '</div>'
 
     + '<div class="stitle">Macronutriments</div>'
     + '<div class="macro-grid">'
     + '<div class="macro-item ip"><div class="macro-label mp">Proteines (g)</div>'
-    + '<input type="number" inputmode="numeric" id="in-p" placeholder="' + cfg.macroP + '" value="' + (ex.macroP||'') + '" oninput="updKcal()"/></div>'
+    + '<input type="number" inputmode="numeric" id="in-p" placeholder="' + cfg.macroP + '" value="' + (ex.macroP||'') + '" oninput="updKcal();svDraft()"/></div>'
     + '<div class="macro-item il"><div class="macro-label ml">Lipides (g)</div>'
-    + '<input type="number" inputmode="numeric" id="in-l" placeholder="' + cfg.macroL + '" value="' + (ex.macroL||'') + '" oninput="updKcal()"/></div>'
+    + '<input type="number" inputmode="numeric" id="in-l" placeholder="' + cfg.macroL + '" value="' + (ex.macroL||'') + '" oninput="updKcal();svDraft()"/></div>'
     + '<div class="macro-item ig"><div class="macro-label mg">Glucides (g)</div>'
-    + '<input type="number" inputmode="numeric" id="in-g" placeholder="' + cfg.macroG + '" value="' + (ex.macroG||'') + '" oninput="updKcal()"/></div>'
+    + '<input type="number" inputmode="numeric" id="in-g" placeholder="' + cfg.macroG + '" value="' + (ex.macroG||'') + '" oninput="updKcal();svDraft()"/></div>'
     + '<div class="macro-item ic"><div class="macro-label mc">Calories (kcal)</div>'
-    + '<input type="number" inputmode="numeric" id="in-cal" placeholder="2100" value="' + (ex.calories||'') + '"/></div>'
+    + '<input type="number" inputmode="numeric" id="in-cal" placeholder="2100" oninput="svDraft()" value="' + (ex.calories||'') + '"/></div>'
     + '</div>'
     + '<div class="kcal-prev" id="kp">' + (k ? '= ' + k + ' kcal calcules' : '') + '</div>'
     + '<div class="macro-bar" id="mb">' + macroBar(ex.macroP, ex.macroL, ex.macroG) + '</div>'
@@ -285,9 +301,9 @@ function renderSaisie() {
     + '<div class="stitle">Activite</div>'
     + '<div class="g2" style="margin-bottom:12px">'
     + '<div class="field" style="margin-bottom:0"><label>Pas</label>'
-    + '<input type="number" inputmode="numeric" id="in-pas" placeholder="15000" value="' + (ex.pas||'') + '"/></div>'
+    + '<input type="number" inputmode="numeric" id="in-pas" placeholder="15000" oninput="svDraft()" value="' + (ex.pas||'') + '"/></div>'
     + '<div class="field" style="margin-bottom:0"><label>Entrainement</label>'
-    + '<input type="text" id="in-train" placeholder="Dos / SDT" value="' + (ex.entrainement||'') + '"/></div>'
+    + '<input type="text" id="in-train" placeholder="Dos / SDT" oninput="svDraft()" value="' + (ex.entrainement||'') + '"/></div>'
     + '</div>'
 
     + '<div class="stitle">Ressenti general</div>'
@@ -298,7 +314,7 @@ function renderSaisie() {
     + '</div>'
 
     + '<div class="field" style="margin-top:12px"><label>Notes</label>'
-    + '<textarea id="in-notes" rows="2" placeholder="Remarques, sensations...">' + (ex.notes||'') + '</textarea></div>'
+    + '<textarea id="in-notes" rows="2" oninput="svDraft()" placeholder="Remarques, sensations...">' + (ex.notes||'') + '</textarea></div>'
 
     + '<button class="btn btn-p" onclick="saveEntry()">Sauvegarder</button>'
     + '</div>';
@@ -322,6 +338,7 @@ function updKcal() {
 function setR(n) {
   curR = n;
   document.querySelectorAll('.rb').forEach(function(b) { b.classList.toggle('active', parseInt(b.textContent) === n); });
+  svDraft();
 }
 
 function saveEntry() {
@@ -346,6 +363,7 @@ function saveEntry() {
   var idx = db.entries.findIndex(function(e) { return e.date === td; });
   if (idx >= 0) db.entries[idx] = entry; else db.entries.push(entry);
   svDB();
+  clDraft();
   toast('Donnees sauvegardees');
   renderDash();
 }
@@ -439,8 +457,11 @@ function fbCopy(txt) {
 }
 
 function markDone() {
-  db.lastBilanIdx = weightEntries().length;
-  svDB(); toast('Bilan marque envoye');
+  // Advance by exactly 3 (the pesees used for this bilan)
+  // Don't wipe out extra entries
+  var used = Math.min(3, sinceLastBilan().length);
+  db.lastBilanIdx = db.lastBilanIdx + used;
+  svDB(); toast('Bilan marque comme envoye');
   renderBilan(); renderDash();
 }
 
