@@ -110,7 +110,19 @@ function avg(arr, key) {
 function sortedE() { return db.entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);}); }
 function weightE() { return sortedE().filter(function(e){return e.poids;}); }
 function sinceB() { return weightE().slice(db.lastBilanIdx); }
-function bilanOk() { return sinceB().length >= 3; }
+function bilanOk() {
+  var day = new Date().getDay(); // 0=Sun, 1=Mon, 4=Thu
+  return (day === 1 || day === 4) && sinceB().length >= 1;
+}
+function nextBilanDay() {
+  var now = new Date();
+  var day = now.getDay();
+  var daysToMon = (8 - day) % 7 || 7;
+  var daysToThu = (4 - day + 7) % 7 || 7;
+  var next = Math.min(daysToMon, daysToThu);
+  var d = new Date(now); d.setDate(d.getDate() + next);
+  return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+}
 function daysLeft() { return Math.max(0, Math.round((new Date(cfg.dateFin+'T12:00:00') - new Date()) / 864e5)); }
 function mbar(p, l, g) {
   var tot = parseFloat(p||0)+parseFloat(l||0)+parseFloat(g||0);
@@ -180,8 +192,8 @@ function renderDash() {
         + '<div class="met"><div class="mel">Poids ce matin</div>'
         + '<div class="mev">'+(last?last.poids:'---')+'<span class="meu"> kg</span></div></div>'
         + '<div class="met"><div class="mel">Prochain bilan</div>'
-        + '<div class="mev">'+(3-sinceB2)+'<span class="meu"> pesees</span></div>'
-        + '<div class="med dne">'+sinceB2+'/3 depuis dernier</div></div>'
+        + '<div class="mev" style="font-size:14px;font-weight:700">'+(bilanOk()?'Disponible !':nextBilanDay())+'</div>'
+        + '<div class="med '+(bilanOk()?'dp':'dne')+'">'+sinceB2+' entrees depuis dernier</div></div>'
         + '</div>'
         + '<div style="font-size:11px;color:var(--text2);display:flex;justify-content:space-between;margin-top:4px">'
         + '<span>Fin de seche</span><span style="color:var(--gold);font-weight:600">J-'+dl+' — '+fmtD(cfg.dateFin)+'</span></div>'
@@ -361,38 +373,57 @@ function genBilan(entries) {
   var prevP = prevWE.map(function(e){return parseFloat(e.poids);});
   var prevAvg = prevP.length ? Math.round(prevP.reduce(function(a,b){return a+b;},0)/prevP.length*10)/10 : null;
   var wD = avgP && prevAvg ? (avgP-prevAvg).toFixed(1) : null;
-  var avgCal = avg(entries,'calories');
-  var avgMp = avg(entries,'macroP');
-  var avgMl = avg(entries,'macroL');
-  var avgMg = avg(entries,'macroG');
   var avgPas = avg(entries,'pas');
   var avgSl = avg(entries,'sommeil_score');
   var avgSd = avg(entries,'sommeil_duree');
   var avgRes = avg(entries,'ressenti');
-  var trains = entries.filter(function(e){return e.entrainement;}).map(function(e){return e.entrainement;});
   var poidsAct = poids.length ? poids[poids.length-1] : cfg.poidsDepart;
   var perdu = (cfg.poidsDepart-poidsAct).toFixed(1);
   var dl = daysLeft();
   var df = entries[0] ? fmtD(entries[0].date) : '';
   var dt = entries[entries.length-1] ? fmtD(entries[entries.length-1].date) : '';
+  var jours = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 
   var t = 'BILAN SECHE -- '+df+' -> '+dt+'\n';
   t += '========================\n\n';
+
   t += 'POIDS\n';
   t += 'Pesees : '+poids.map(function(p){return p+' kg';}).join(' / ')+'\n';
-  t += 'Moyenne periode : '+(avgP||'---')+' kg\n';
+  t += 'Moyenne : '+(avgP||'---')+' kg\n';
   if (wD!==null) t += 'vs bilan precedent : '+(parseFloat(wD)>0?'+':'')+wD+' kg\n';
   t += 'Perdu depuis depart : '+perdu+' kg\n';
   t += 'J-'+dl+' avant fin de seche ('+fmtD(cfg.dateFin)+')\n\n';
-  t += 'NUTRITION MOYENNE\n';
-  t += 'Calories : '+(avgCal||'---')+' kcal/j (cible : '+cfg.calCible+' kcal)\n';
-  t += 'P : '+(avgMp||'---')+'g  L : '+(avgMl||'---')+'g  G : '+(avgMg||'---')+'g\n\n';
+
+  t += 'NUTRITION JOUR PAR JOUR\n';
+  t += '------------------------\n';
+  entries.forEach(function(e) {
+    var d = new Date(e.date+'T12:00:00');
+    var jour = jours[d.getDay()]+' '+fmtD(e.date);
+    var kcalStr = e.calories ? e.calories+' kcal' : '---';
+    var pStr = e.macroP ? 'P'+e.macroP+'g' : 'P---';
+    var lStr = e.macroL ? 'L'+e.macroL+'g' : 'L---';
+    var gStr = e.macroG ? 'G'+e.macroG+'g' : 'G---';
+    var poidsStr = e.poids ? e.poids+'kg' : '---';
+    t += jour+' : '+poidsStr+' · '+kcalStr+' · '+pStr+' '+lStr+' '+gStr+'\n';
+  });
+  t += '------------------------\n';
+  var allCal = entries.filter(function(e){return e.calories;}).map(function(e){return parseFloat(e.calories);});
+  var avgCal = allCal.length ? Math.round(allCal.reduce(function(a,b){return a+b;},0)/allCal.length) : null;
+  var avgMp = avg(entries,'macroP');
+  var avgMl = avg(entries,'macroL');
+  var avgMg = avg(entries,'macroG');
+  t += 'Moy. calories : '+(avgCal||'---')+' kcal/j (cible : '+cfg.calCible+' kcal)\n';
+  t += 'Moy. macros   : P'+(avgMp||'---')+'g L'+(avgMl||'---')+'g G'+(avgMg||'---')+'g\n\n';
+
   t += 'ACTIVITE\n';
   t += 'Pas moyens : '+(avgPas?Math.round(avgPas).toLocaleString('fr-FR'):'---')+'/j\n';
+  var trains = entries.filter(function(e){return e.entrainement;}).map(function(e){return e.entrainement;});
   t += 'Entrainements : '+(trains.length?trains.join(' | '):'non renseignes')+'\n\n';
+
   t += 'SOMMEIL\n';
   t += 'Duree moyenne : '+(avgSd||'---')+'h\n';
   t += 'Score montre : '+(avgSl||'---')+(avgSl?'%':'')+'\n\n';
+
   t += 'RESSENTI MOYEN : '+(avgRes||'---')+'/10\n\n';
   t += '========================\n';
   t += 'Analyse et retour coach svp.';
@@ -416,11 +447,11 @@ function renderBilan() {
   } else {
     el.innerHTML = '<div class="card"><div class="ct">Prochain bilan</div>'
       + '<div style="text-align:center;padding:20px 0">'
-      + '<div style="font-size:40px;margin-bottom:12px">&#x2696;&#xFE0F;</div>'
-      + '<div style="font-size:14px;color:var(--text2)">Il manque <b style="color:var(--text)">'+(3-newE.length)+' pesee(s)</b><br>depuis le dernier bilan</div>'
-      + '<div class="dots">'
-      + [0,1,2].map(function(i){return '<div class="dot'+(i<newE.length?' on':'')+'"></div>';}).join('')
-      + '</div></div></div>';
+      + '<div style="font-size:40px;margin-bottom:12px">&#x1F4C5;</div>'
+      + '<div style="font-size:14px;color:var(--text2)">Prochain bilan le</div>'
+      + '<div style="font-size:16px;font-weight:700;color:var(--text);margin:8px 0">'+nextBilanDay()+'</div>'
+      + '<div style="font-size:12px;color:var(--text2)">'+newE.length+' entree(s) depuis le dernier bilan</div>'
+      + '</div></div>';
   }
 }
 
@@ -439,10 +470,8 @@ function fbCopy(txt) {
 }
 
 function markDone() {
-  // Advance by exactly the number of entries used (3)
-  db.lastBilanIdx = db.lastBilanIdx + 3;
-  // Cap at total weight entries
-  if (db.lastBilanIdx > weightE().length) db.lastBilanIdx = weightE().length;
+  // Advance lastBilanIdx to current weight entries count
+  db.lastBilanIdx = weightE().length;
   svDB();
   toast('Bilan marque comme envoye');
   renderBilan();
