@@ -114,6 +114,7 @@ function bilanOk() {
   var day = new Date().getDay(); // 0=Sun, 1=Mon, 4=Thu
   return (day === 1 || day === 4) && sinceB().length >= 1;
 }
+// Saisie is always available regardless of bilan status
 function nextBilanDay() {
   var now = new Date();
   var day = now.getDay();
@@ -470,8 +471,10 @@ function fbCopy(txt) {
 }
 
 function markDone() {
-  // Advance lastBilanIdx to current weight entries count
-  db.lastBilanIdx = weightE().length;
+  // Only advance by entries that were included in this bilan
+  // sinceB() gives entries since last bilan
+  var used = sinceB().length;
+  db.lastBilanIdx = db.lastBilanIdx + used;
   svDB();
   toast('Bilan marque comme envoye');
   renderBilan();
